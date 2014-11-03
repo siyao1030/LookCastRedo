@@ -17,6 +17,24 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    // Override point for customization after application launch.
+    self.window.backgroundColor = [UIColor whiteColor];
+
+    MainCollectionViewController *mainView =[[MainCollectionViewController alloc]init];
+    [mainView.navigationItem setTitle:@"Back"];
+    mainView.context = [self managedObjectContext];
+    
+    [mainView setup];
+    
+    // set nav bar root view controller
+    UINavigationController * navController = [[UINavigationController alloc] initWithRootViewController:mainView];
+    navController.navigationBar.tintColor = [UIColor colorWithRed:35.0/255.0 green:154.0/255.0 blue:167.0/255.0 alpha:0.5];
+    
+    // set application root view controller
+    [self.window setRootViewController:navController];
+
     return YES;
 }
 
