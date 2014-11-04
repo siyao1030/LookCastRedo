@@ -17,50 +17,93 @@
     return self;
 }
 
-- (NSMutableArray *)getMatchedPhotosWithCurrentWeather:(Weather *)currentWeather {
-    NSMutableArray * matchedPhotos = [[NSMutableArray alloc] init];
-    for (int i = 0; i < self.validPhotos.count; i++) {
-        if (matchedPhotos.count < 20) {
-            WeatherPhoto * currentPhoto = [self.validPhotos objectAtIndex:i];
-            if ([currentPhoto.weather getSimilarityScoreWith:currentWeather]) {
-                <#statements#>
+
+- (NSArray *)sortArray:(NSMutableArray *)array forK:(NSUInteger)K withCurrentWeather:(Weather *)currentWeather
+{
+    NSMutableArray *resultArray = [array mutableCopy];
+    NSUInteger count = resultArray.count;
+    NSParameterAssert(K <= count);
+    
+    NSUInteger minIndex;
+    float minValue;
+    
+    for (NSUInteger i = 0; i < K; i++) {
+        minIndex = i;
+        WeatherPhoto * photoi = resultArray[i];
+        minValue = [photoi.weather getSimilarityScoreWith:currentWeather];
+        
+        for (NSUInteger j = i + 1; j < count; j++) {
+            WeatherPhoto * photoj = resultArray[i];
+            float valuej = [photoj.weather getSimilarityScoreWith:currentWeather];
+            
+            if (valuej < minValue) {
+                minIndex = j;
+                minValue = valuej;
             }
         }
+        
+        [resultArray exchangeObjectAtIndex:i withObjectAtIndex:minIndex];
+    }
+    
+    
+    return [resultArray subarrayWithRange:NSMakeRange(0, K-1)];
+    
+}
+
+- (void)getMatchedPhotos:(NSArray **)result WithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block {
+    *result = [self sortArray:self.validPhotos forK:10 withCurrentWeather:currentWeather];
+    
+    if (*result != nil) {
+        block(*result);
     }
 }
+
+- (void)getMatchedPhotosWithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block {
+    NSArray *result = nil;
+    result = [self sortArray:self.validPhotos forK:10 withCurrentWeather:currentWeather];
+
+    if (result != nil) {
+        block(result);
+    }
+}
+
+
 - (void)updatePhotosWithCompletionBlock:(void (^)(void))block {
     void (^ assetGroupEnumerator)(ALAssetsGroup *group, BOOL *stop) = ^(ALAssetsGroup *group, BOOL *stop){
-    [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+        [group enumerateAssetsWithOptions:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
         if (result)
         {
-            if ([self.validPhotos count] <= 5) {
-                if ([self isValidPhoto:result]) {
-                    NSURL *photoURL = [result valueForProperty:ALAssetPropertyAssetURL];
-                    CLLocation *photoLocation = [result valueForProperty:ALAssetPropertyLocation];
-                    NSDate *photoDate = [result valueForProperty:ALAssetPropertyDate];
-                    
-                    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"WeatherPhoto" inManagedObjectContext:self.context];
-                    WeatherPhoto *temp = [[WeatherPhoto alloc] initWithEntity:entityDescription insertIntoManagedObjectContext:self.context];
+            
+            if ([self isValidPhoto:result]) {
+                NSURL *photoURL = [result valueForProperty:ALAssetPropertyAssetURL];
+                CLLocation *photoLocation = [result valueForProperty:ALAssetPropertyLocation];
+                NSDate *photoDate = [result valueForProperty:ALAssetPropertyDate];
+                
+                NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"WeatherPhoto" inManagedObjectContext:self.context];
+                WeatherPhoto *temp = [[WeatherPhoto alloc] initWithEntity:entityDescription insertIntoManagedObjectContext:self.context];
 
-                    [temp setUrl:[photoURL absoluteString]];
-                    [temp setLocation:photoLocation];
-                    [temp setDate:photoDate];
+                [temp setUrl:[photoURL absoluteString]];
+                [temp setLocation:photoLocation];
+                [temp setDate:photoDate];
 
-                    [WeatherEngine addWeatherDataToPhoto:temp];
-                    
-                    if (![self.validPhotos containsObject:temp]) {
-                        [self.validPhotos addObject:temp];
-                    } else {
-                        
+                [WeatherEngine addWeatherDataToPhoto:temp];
+                
+                if (![self.validPhotos containsObject:temp]) {
+                    [self.validPhotos addObject:temp];
+                    if (self.validPhotos.count >=25) {
+                        // stop because we have enough for testing right now
                         block();
                     }
+                } else {
+                    // stop because we have gone through all the new photos
+                    block();
                 }
-            } else {
-                block();
             }
         } else {
+            // stop because there are no more photos
             block();
         }
+        
     }];};
     
     [self.library enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos
@@ -73,9 +116,7 @@
 
 }
 
-- (void)sortValidPhotos {
-    
-}
+
 - (BOOL)isValidPhoto:(ALAsset *)photo {
     if ([self isJPEG:photo] && [self hasFaces:photo]) {
         return YES;

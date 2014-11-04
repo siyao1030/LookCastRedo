@@ -20,33 +20,29 @@
     return self;
 }
 
-- (void)setUpWithWeatherInfo
+- (void)setUpWithWeatherInfoWithCurrentWeather:(Weather *)currentWeather
 {
-    NSDictionary * weather = [WeatherEngine updateWeatherData];
-
-    self.icon = [[UIImageView alloc]initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@%@", weather[@"icon"], @".png"]]];
+    self.icon = [[UIImageView alloc]initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@%@", currentWeather.description, @".png"]]];
     [self addSubview:self.icon];
     [self.icon setFrame:CGRectMake(11, 24, 45, 38)];
     
     self.high = [[UILabel alloc]initWithFrame:CGRectMake(11, 95, 42, 44)];
-    [self.high setText:[NSString stringWithFormat:@"%@",weather[@"high"]]];
+    [self.high setText:currentWeather.high.stringValue];
     self.high.textAlignment = NSTextAlignmentLeft;
     [self.high setFont:[UIFont fontWithName:@"Helvetica" size:36]];
     self.high.textColor = [UIColor whiteColor];
     [self addSubview:self.high];
     
     self.low = [[UILabel alloc]initWithFrame:CGRectMake(265, 95, 42, 44)];
-    [self.low setText:[NSString stringWithFormat:@"%@",weather[@"low"]]];
+    [self.low setText:currentWeather.low.stringValue];
     self.low.textAlignment = NSTextAlignmentRight;
     [self.low setFont:[UIFont fontWithName:@"Helvetica" size:36]];
     self.low.textColor = [UIColor whiteColor];
     [self addSubview:self.low];
     
-    //NSLog(weather[@"temp_f"]);
-
     
     self.current = [[UILabel alloc]initWithFrame:CGRectMake(115, 55, 85, 88)];
-    [self.current setText:weather[@"temp_f"]];
+    [self.current setText:[NSString stringWithFormat:@"%d", currentWeather.currentTemp.intValue]];
     self.current.textAlignment = NSTextAlignmentCenter;
     [self.current setFont:[UIFont fontWithName:@"Helvetica" size:64]];
     self.current.textColor = [UIColor whiteColor];
@@ -54,7 +50,7 @@
     
     
     self.location = [[UILabel alloc]initWithFrame:CGRectMake(175, 28, 141, 29)];
-    [self.location setText:@"Claremont,CA"];
+    [self.location setText:currentWeather.location];
     self.current.textAlignment = NSTextAlignmentRight;
     [self.location setFont:[UIFont fontWithName:@"Helvetica" size:21]];
     self.location.textColor = [UIColor whiteColor];
@@ -63,11 +59,6 @@
     //self.takePictureButton = [[UIButton alloc]init];
     //self.takePictureButton setFrame
     
-    
-    
-
-    
-
     
 }
 

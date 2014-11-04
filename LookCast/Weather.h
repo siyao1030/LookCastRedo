@@ -12,6 +12,7 @@
 
 @interface Weather : NSObject
 
+@property (nonatomic, retain) NSString * location;
 //current
 @property (nonatomic, retain) NSNumber * currentTemp;
 @property (nonatomic, retain) NSNumber * feelLikeTemp;

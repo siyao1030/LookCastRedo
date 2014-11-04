@@ -10,6 +10,7 @@
 
 @implementation Weather
 
+@synthesize location;
 @synthesize high;
 @synthesize low;
 @synthesize chanceOfRain;
@@ -18,6 +19,8 @@
 
 @synthesize description;
 @synthesize mean;
+
+
 
 float _highDiffWeight = 0.3;
 float _lowDiffWeight = 0.35;

@@ -20,7 +20,7 @@
 @property UIImagePickerController *camera;
 
 
-- (void)setUpWithWeatherInfo;
+- (void)setUpWithWeatherInfoWithCurrentWeather:(Weather *)currentWeather;
 
 
 @end

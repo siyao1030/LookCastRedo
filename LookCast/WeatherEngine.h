@@ -15,7 +15,10 @@
 
 @property float latitude;
 @property float longitude;
+@property CLLocation *currentLocation;
 
+-(Weather *)currentWeatherAtCurrentLocation;
+- (Weather *)currentWeatherForLocation:(CLLocation *)location;
 + (NSDictionary *)updateWeatherData;
 + (void)addWeatherDataToPhoto:(WeatherPhoto *)photo;
 

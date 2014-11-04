@@ -120,6 +120,8 @@
 				9F757D1C1A055E0100BA2912 /* Images.xcassets */,
 				9F757D1E1A055E0100BA2912 /* LaunchScreen.xib */,
 				9F757D131A055E0100BA2912 /* LookCast.xcdatamodeld */,
+				9F757D521A06E12500BA2912 /* Weather.h */,
+				9F757D531A06E12500BA2912 /* Weather.m */,
 				9F757D4F1A06DF8800BA2912 /* WeatherEngine.h */,
 				9F757D501A06DF8800BA2912 /* WeatherEngine.m */,
 				9F757D461A05625A00BA2912 /* WeatherPhoto.h */,
@@ -166,8 +168,6 @@
 				9F757D391A055E8B00BA2912 /* DetailViewController.m */,
 				9F757D3A1A055E8B00BA2912 /* WeatherView.h */,
 				9F757D3B1A055E8B00BA2912 /* WeatherView.m */,
-				9F757D521A06E12500BA2912 /* Weather.h */,
-				9F757D531A06E12500BA2912 /* Weather.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -231,6 +231,7 @@
 				TargetAttributes = {
 					9F757D081A055E0100BA2912 = {
 						CreatedOnToolsVersion = 6.1;
+						DevelopmentTeam = ZSAWMFSS9U;
 					};
 					9F757D241A055E0100BA2912 = {
 						CreatedOnToolsVersion = 6.1;
@@ -417,9 +418,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = LookCast/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -427,9 +431,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = LookCast/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
@@ -486,6 +493,7 @@
 				9F757D311A055E0100BA2912 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9F757D321A055E0100BA2912 /* Build configuration list for PBXNativeTarget "LookCastTests" */ = {
 			isa = XCConfigurationList;
@@ -494,6 +502,7 @@
 				9F757D341A055E0100BA2912 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

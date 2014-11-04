@@ -19,5 +19,7 @@
 @property NSManagedObjectContext *context;
 
 - (void)updatePhotosWithCompletionBlock:(void (^)(void))block;
+- (void)getMatchedPhotos:(NSArray **)result WithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block;
+- (void)getMatchedPhotosWithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block;
 
 @end

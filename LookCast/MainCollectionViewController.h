@@ -13,21 +13,24 @@
 
 @interface MainCollectionViewController : UIViewController
 
-@property NSMutableArray *images;
+@property NSArray *matchedPhotos;
 @property NSMutableArray *imageURLs;
 @property UICollectionView *collectionView;
 @property ALAssetsLibrary *library;
+@property CLLocation *currentLocation;
+@property Weather *currentWeather;
 
 @property WeatherView *weatherView;
 @property UIImagePickerController *camera;
 
 @property PhotoParser *photoParser;
+@property WeatherEngine *weatherEngine;
 @property UIButton *takePhotoButton;
 
 @property NSManagedObjectContext *context;
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 
--(void)setup;
+-(void)setupWithCurrentLocation:(CLLocation *)currentLocation;
 @end
 

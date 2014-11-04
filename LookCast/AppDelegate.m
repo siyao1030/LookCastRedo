@@ -14,7 +14,10 @@
 
 @implementation AppDelegate
 
-
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    self.currentLocation = [locations lastObject];
+}
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
@@ -22,11 +25,22 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
 
+    self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.delegate = self;
+    self.locationManager.distanceFilter = kCLDistanceFilterNone;
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    [self.locationManager requestWhenInUseAuthorization];
+    if([CLLocationManager locationServicesEnabled]){
+        [self.locationManager startUpdatingLocation];
+    }
+    
+    // temporary hard code location
+    self.currentLocation = [[CLLocation alloc]initWithLatitude:37.77500916 longitude:-122.41825867];
+    
     MainCollectionViewController *mainView =[[MainCollectionViewController alloc]init];
     [mainView.navigationItem setTitle:@"Back"];
     mainView.context = [self managedObjectContext];
-    
-    [mainView setup];
+    [mainView setupWithCurrentLocation:self.currentLocation];
     
     // set nav bar root view controller
     UINavigationController * navController = [[UINavigationController alloc] initWithRootViewController:mainView];

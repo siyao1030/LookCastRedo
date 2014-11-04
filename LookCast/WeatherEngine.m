@@ -14,6 +14,13 @@
 
 - (id) init
 {
+    locationManager = [[CLLocationManager alloc] init];
+    locationManager.delegate = self;
+    locationManager.distanceFilter = kCLDistanceFilterNone;
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    [locationManager requestWhenInUseAuthorization];
+    [locationManager startUpdatingLocation];
+    
     return self;
 }
 
@@ -39,9 +46,16 @@
     return weather;
 }
 
-
-// Current Weather in current location
-+ (Weather *)currentWeatherForLocation:(CLLocation *)location
+-(Weather *)currentWeatherAtCurrentLocation
+{
+    if (self.currentLocation) {
+        return [self currentWeatherForLocation:self.currentLocation];
+    } else {
+        return nil;
+    }
+}
+// Current Weather in location
+- (Weather *)currentWeatherForLocation:(CLLocation *)location
 {
     float latitude = location.coordinate.latitude;
     float longitude = location.coordinate.longitude;
@@ -56,7 +70,7 @@
     
     Weather * currentWeather = [[Weather alloc] init];
     [currentWeather setCurrentTemp:[NSNumber numberWithFloat:[result[@"current_observation"][@"temp_f"] floatValue]]];
-   
+    [currentWeather setLocation:result[@"current_observation"][@"display_location"][@"full"]];
     //Precipitation in inches
     [currentWeather setChanceOfRain:[NSNumber numberWithFloat:[result[@"current_observation"][@"precip_today_in"] floatValue]]];
     //Icon name, somethinglike partlycloudy
@@ -131,8 +145,14 @@
 
 + (void)addWeatherDataToPhoto:(WeatherPhoto *)photo {
     Weather * weather = [self weatherForLocation:photo.location date:photo.date];
+    NSLog(@"weather:%@, %@", weather.high, weather.low);
     [photo setWeather:weather];
 }
 
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    self.currentLocation = [locations lastObject];
+}
 
 @end

@@ -14,7 +14,7 @@
 @dynamic url;
 @dynamic date;
 @dynamic location;
-
+@dynamic weather;
 
 
 -(id)initWithUrl:(NSString *)url andLocation:(CLLocation *)location andDate:(NSDate *)date {

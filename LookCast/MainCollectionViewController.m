@@ -21,52 +21,39 @@
         // Custom initialization
         
         self.imageURLs = [[NSMutableArray alloc] init];
-        self.images = [[NSMutableArray alloc] init];
         self.library = [[ALAssetsLibrary alloc] init];
-        
-        /*
-        [self.images addObject:[UIImage imageNamed:@"demo1.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo2.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo3.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo4.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo5.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo6.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo7.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo8.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo9.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo10.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo11.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo12.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo13.JPG"]];
-        [self.images addObject:[UIImage imageNamed:@"demo14.JPG"]];
-         */
-
-
-
-        /*NSMutableArray *relevantPhotoItems = [Weather addWeatherDataToPhotoItems];
-        for (PhotoItem * photoItem in relevantPhotoItems)
-        {
-            [self.imageURLs addObject:photoItem.url];
-        }*/
+        self.weatherEngine = [[WeatherEngine alloc] init];
         
     }
     return self;
 }
 
--(void)setup {
+-(void)setupWithCurrentLocation:(CLLocation *)currentLocation {
+    self.currentLocation = currentLocation;
+    self.currentWeather = [self.weatherEngine currentWeatherForLocation:self.currentLocation];
+    
     self.photoParser = [[PhotoParser alloc]init];
     self.photoParser.context = self.context;
     
-    void (^completionBlock)(void)= ^{
+    void (^loadDataBlock)(NSArray *)= ^(NSArray *result){
+        self.matchedPhotos = result;
         [self.collectionView reloadData];
     };
+    
+    void (^completionBlock)(void)= ^{
+        [self.photoParser getMatchedPhotosWithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+
+        //[self.photoParser getMatchedPhotos:&result WithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+        
+    };
+
 
     [self.photoParser updatePhotosWithCompletionBlock:completionBlock];
     
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return self.photoParser.validPhotos.count;
+    return self.matchedPhotos.count;
 }
 
 
@@ -85,7 +72,7 @@
     }
     
     // Configure the cell...
-    WeatherPhoto * weatherPhoto = [self.photoParser.validPhotos objectAtIndex:indexPath.row];
+    WeatherPhoto * weatherPhoto = [self.matchedPhotos objectAtIndex:indexPath.row];
     
     [self.library assetForURL:[NSURL URLWithString:weatherPhoto.url] resultBlock:^(ALAsset *asset)
      {
@@ -132,9 +119,7 @@
 
 - (void)viewDidLoad
 {
-    
     [super viewDidLoad];
-
     
     self.collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 123, 320, 470) collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
     [self.collectionView setDataSource:self];
@@ -147,8 +132,7 @@
     
     
     self.weatherView = [[WeatherView alloc] initWithFrame:CGRectMake(0, 0, 320, 170)];
-    //NSDictionary * dict;
-    [self.weatherView setUpWithWeatherInfo];
+    [self.weatherView setUpWithWeatherInfoWithCurrentWeather:self.currentWeather];
     self.weatherView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:0.0];
     
     [self.view addSubview:self.weatherView];
@@ -175,7 +159,7 @@
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     
-    UIImage *temp = [self.photoParser.validPhotos objectAtIndex:indexPath.row];
+    UIImage *temp = [self.matchedPhotos objectAtIndex:indexPath.row];
     //NSLog(temp);
     // Navigation logic may go here. Create and push another view controller.
     
