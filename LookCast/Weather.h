@@ -10,7 +10,7 @@
 #import <CoreLocation/CoreLocation.h>
 
 
-@interface Weather : NSObject
+@interface Weather : NSObject <NSCoding>
 
 @property (nonatomic, retain) NSString * location;
 //current

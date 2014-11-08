@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import "WeatherPhoto.h"
+#import "ForecastKit.h"
+
 
 
 @interface WeatherEngine : NSObject <CLLocationManagerDelegate>
@@ -16,9 +18,10 @@
 @property float latitude;
 @property float longitude;
 @property CLLocation *currentLocation;
+@property ForecastKit *forecast;
 
 -(Weather *)currentWeatherAtCurrentLocation;
-- (Weather *)currentWeatherForLocation:(CLLocation *)location;
+- (void)currentWeatherForLocation:(CLLocation *)location City:(NSString *)city withCompletionBlock:(void (^)(Weather *))block;
 + (NSDictionary *)updateWeatherData;
 + (void)addWeatherDataToPhoto:(WeatherPhoto *)photo;
 

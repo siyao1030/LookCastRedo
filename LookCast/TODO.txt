@@ -1,0 +1,13 @@
+-improve face recognition
+-include only photos taken with phone
+-parse through photos in the background while displaying current matched photos
+    - sort and add new photos to matched photos if appropriate
+-determine what really is a match
+-improve performance, now photo enumeration is too slow
+-use real location -> get locationManager to work
+
+
+
+api constraints:
+free service, only 60 days historical
+limited amount of calls

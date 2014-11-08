@@ -22,38 +22,71 @@
 
 - (void)setUpWithWeatherInfoWithCurrentWeather:(Weather *)currentWeather
 {
+    CGRect bounds = [self bounds];
+
+    CGFloat topPadding = 24;
+    CGFloat sidePadding = 10;
+    CGFloat bottomPadding = 30;
+    
     self.icon = [[UIImageView alloc]initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@%@", currentWeather.description, @".png"]]];
     [self addSubview:self.icon];
-    [self.icon setFrame:CGRectMake(11, 24, 45, 38)];
+    [self.icon sizeToFit];
+    [self.icon setFrame:CGRectMake(sidePadding, topPadding, self.icon.frame.size.width, self.icon.frame.size.height)];
     
-    self.high = [[UILabel alloc]initWithFrame:CGRectMake(11, 95, 42, 44)];
+    self.high = [[UILabel alloc] init];
     [self.high setText:currentWeather.high.stringValue];
     self.high.textAlignment = NSTextAlignmentLeft;
     [self.high setFont:[UIFont fontWithName:@"Helvetica" size:36]];
     self.high.textColor = [UIColor whiteColor];
+    
+    [self.high sizeToFit];
+    CGRect highFrame = self.high.frame;
+    highFrame.origin.x = sidePadding;
+    highFrame.origin.y = bounds.size.height - highFrame.size.height - bottomPadding;
+    [self.high setFrame:highFrame];
+    
     [self addSubview:self.high];
     
-    self.low = [[UILabel alloc]initWithFrame:CGRectMake(265, 95, 42, 44)];
+    self.low = [[UILabel alloc] init];
     [self.low setText:currentWeather.low.stringValue];
     self.low.textAlignment = NSTextAlignmentRight;
     [self.low setFont:[UIFont fontWithName:@"Helvetica" size:36]];
     self.low.textColor = [UIColor whiteColor];
+    
+    [self.low sizeToFit];
+    CGRect lowFrame = self.low.frame;
+    lowFrame.origin.x = bounds.size.width - lowFrame.size.width - sidePadding;
+    lowFrame.origin.y = bounds.size.height - lowFrame.size.height - bottomPadding;
+    [self.low setFrame:lowFrame];
+    
     [self addSubview:self.low];
     
     
-    self.current = [[UILabel alloc]initWithFrame:CGRectMake(115, 55, 85, 88)];
+    self.current = [[UILabel alloc] init];
     [self.current setText:[NSString stringWithFormat:@"%d", currentWeather.currentTemp.intValue]];
     self.current.textAlignment = NSTextAlignmentCenter;
     [self.current setFont:[UIFont fontWithName:@"Helvetica" size:64]];
     self.current.textColor = [UIColor whiteColor];
+    
+    [self.current sizeToFit];
+    CGRect currentFrame = self.current.frame;
+    currentFrame.origin.x = rintf((bounds.size.width - currentFrame.size.width) / 2.0);
+    currentFrame.origin.y = bounds.size.height - currentFrame.size.height - bottomPadding;
+    [self.current setFrame:currentFrame];
     [self addSubview:self.current];
     
     
-    self.location = [[UILabel alloc]initWithFrame:CGRectMake(175, 28, 141, 29)];
+    self.location = [[UILabel alloc] init];
     [self.location setText:currentWeather.location];
     self.current.textAlignment = NSTextAlignmentRight;
     [self.location setFont:[UIFont fontWithName:@"Helvetica" size:21]];
     self.location.textColor = [UIColor whiteColor];
+    
+    [self.location sizeToFit];
+    CGRect locationFrame = self.location.frame;
+    locationFrame.origin.x = bounds.size.width - locationFrame.size.width - sidePadding;
+    locationFrame.origin.y = topPadding;
+    [self.location setFrame:locationFrame];
     [self addSubview:self.location];
     
     //self.takePictureButton = [[UIButton alloc]init];
@@ -68,6 +101,7 @@
 // An empty implementation adversely affects performance during animation.
 - (void)drawRect:(CGRect)rect
 {
+    CGRect bounds = [self bounds];
     // Drawing code
     //// General Declarations
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -82,7 +116,7 @@
     CGFloat shadowBlurRadius = 5;
     
     //// Rectangle Drawing
-    UIBezierPath* rectanglePath = [UIBezierPath bezierPathWithRect: CGRectMake(0.5, -0.5, 320, 140)];
+    UIBezierPath* rectanglePath = [UIBezierPath bezierPathWithRect: CGRectMake(0.5, -0.5, bounds.size.width, 140)];
     CGContextSaveGState(context);
     CGContextSetShadowWithColor(context, shadowOffset, shadowBlurRadius, shadow.CGColor);
     [fillColor setFill];
@@ -95,7 +129,7 @@
     
     
     //// Oval Drawing
-    CGRect ovalRect = CGRectMake(136.5, 115.5, 48, 48);
+    CGRect ovalRect = CGRectMake((bounds.size.width-48)/2.0, 115.5, 48, 48);
     UIBezierPath* ovalPath = [UIBezierPath bezierPath];
     [ovalPath addArcWithCenter: CGPointMake(CGRectGetMidX(ovalRect), CGRectGetMidY(ovalRect)) radius: CGRectGetWidth(ovalRect) / 2 startAngle: 0 * M_PI/180 endAngle: 180 * M_PI/180 clockwise: YES];
     [ovalPath addLineToPoint: CGPointMake(CGRectGetMidX(ovalRect), CGRectGetMidY(ovalRect))];

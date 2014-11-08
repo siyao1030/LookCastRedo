@@ -16,7 +16,25 @@
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    self.currentLocation = [locations lastObject];
+    CLLocation *updatedLocation = [locations lastObject];
+    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+    
+    [geocoder reverseGeocodeLocation:updatedLocation // You can pass aLocation here instead
+                   completionHandler:^(NSArray *placemarks, NSError *error) {
+                       dispatch_async(dispatch_get_main_queue(),^ {
+                           if (placemarks.count == 1) {
+                               CLPlacemark *currentPlace = [placemarks objectAtIndex:0];
+                               if (self.currentLocation == nil || ![self.currentCity isEqualToString:currentPlace.locality]) {
+                                   self.currentLocation = updatedLocation;
+                                   self.currentCity = currentPlace.locality;
+                                   [self.mainViewController setupWithCurrentLocation:self.currentLocation City:self.currentCity];
+                               }
+                            }
+                       });
+                   }];
+    
+    
+    
 }
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
@@ -33,17 +51,15 @@
     if([CLLocationManager locationServicesEnabled]){
         [self.locationManager startUpdatingLocation];
     }
+
     
-    // temporary hard code location
-    self.currentLocation = [[CLLocation alloc]initWithLatitude:37.77500916 longitude:-122.41825867];
+    self.mainViewController =[[LCMainViewController alloc]init];
+    [self.mainViewController.navigationItem setTitle:@"Back"];
+    self.mainViewController.context = [self managedObjectContext];
     
-    MainCollectionViewController *mainView =[[MainCollectionViewController alloc]init];
-    [mainView.navigationItem setTitle:@"Back"];
-    mainView.context = [self managedObjectContext];
-    [mainView setupWithCurrentLocation:self.currentLocation];
     
     // set nav bar root view controller
-    UINavigationController * navController = [[UINavigationController alloc] initWithRootViewController:mainView];
+    UINavigationController * navController = [[UINavigationController alloc] initWithRootViewController:self.mainViewController];
     navController.navigationBar.tintColor = [UIColor colorWithRed:35.0/255.0 green:154.0/255.0 blue:167.0/255.0 alpha:0.5];
     
     // set application root view controller
@@ -60,6 +76,7 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    [self saveContext];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -69,6 +86,7 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
+
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.

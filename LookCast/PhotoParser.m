@@ -22,12 +22,12 @@
 {
     NSMutableArray *resultArray = [array mutableCopy];
     NSUInteger count = resultArray.count;
-    NSParameterAssert(K <= count);
+    //NSParameterAssert(K <= count);
     
     NSUInteger minIndex;
     float minValue;
     
-    for (NSUInteger i = 0; i < K; i++) {
+    for (NSUInteger i = 0; i < MIN(K, count); i++) {
         minIndex = i;
         WeatherPhoto * photoi = resultArray[i];
         minValue = [photoi.weather getSimilarityScoreWith:currentWeather];
@@ -46,16 +46,8 @@
     }
     
     
-    return [resultArray subarrayWithRange:NSMakeRange(0, K-1)];
+    return [resultArray subarrayWithRange:NSMakeRange(0, MIN(K-1,resultArray.count))];
     
-}
-
-- (void)getMatchedPhotos:(NSArray **)result WithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block {
-    *result = [self sortArray:self.validPhotos forK:10 withCurrentWeather:currentWeather];
-    
-    if (*result != nil) {
-        block(*result);
-    }
 }
 
 - (void)getMatchedPhotosWithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block {
@@ -67,7 +59,7 @@
     }
 }
 
-
+//todo should always check for new photos and update
 - (void)updatePhotosWithCompletionBlock:(void (^)(void))block {
     void (^ assetGroupEnumerator)(ALAssetsGroup *group, BOOL *stop) = ^(ALAssetsGroup *group, BOOL *stop){
         [group enumerateAssetsWithOptions:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
@@ -90,17 +82,20 @@
                 
                 if (![self.validPhotos containsObject:temp]) {
                     [self.validPhotos addObject:temp];
-                    if (self.validPhotos.count >=25) {
+                    if (self.validPhotos.count >=10) {
                         // stop because we have enough for testing right now
+                        *stop = YES;
                         block();
                     }
                 } else {
                     // stop because we have gone through all the new photos
+                    *stop = YES;
                     block();
                 }
             }
         } else {
             // stop because there are no more photos
+            *stop = YES;
             block();
         }
         
@@ -118,11 +113,15 @@
 
 
 - (BOOL)isValidPhoto:(ALAsset *)photo {
-    if ([self isJPEG:photo] && [self hasFaces:photo]) {
+    if ([self isJPEG:photo] && [self hasFaces:photo] && [self hasLocation:photo]) {
         return YES;
     } else {
         return NO;
     }
+}
+
+- (BOOL)hasLocation:(ALAsset *)photo {
+    return ([photo valueForProperty:ALAssetPropertyLocation] != nil);
 }
 
 - (BOOL)hasFaces:(ALAsset *)photo {

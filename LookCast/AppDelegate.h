@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
-#import "MainCollectionViewController.h"
+#import "LCMainViewController.h"
 #import <CoreLocation/CoreLocation.h>
 
 
@@ -17,6 +17,8 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong, nonatomic) CLLocation *currentLocation;
+@property (strong, nonatomic) NSString *currentCity;
+@property (strong, nonatomic) LCMainViewController *mainViewController;
 
 
 @property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;

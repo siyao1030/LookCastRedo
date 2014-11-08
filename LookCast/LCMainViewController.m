@@ -6,13 +6,13 @@
 //  Copyright (c) 2013 Siyao Xie. All rights reserved.
 //
 
-#import "MainCollectionViewController.h"
+#import "LCMainViewController.h"
 
-@interface MainCollectionViewController ()
+@interface LCMainViewController ()
 
 @end
 
-@implementation MainCollectionViewController
+@implementation LCMainViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -28,28 +28,52 @@
     return self;
 }
 
--(void)setupWithCurrentLocation:(CLLocation *)currentLocation {
+
+-(void)setupWithCurrentLocation:(CLLocation *)currentLocation City:(NSString *)city {
     self.currentLocation = currentLocation;
-    self.currentWeather = [self.weatherEngine currentWeatherForLocation:self.currentLocation];
-    
-    self.photoParser = [[PhotoParser alloc]init];
-    self.photoParser.context = self.context;
+    self.currentCity = city;
     
     void (^loadDataBlock)(NSArray *)= ^(NSArray *result){
         self.matchedPhotos = result;
         [self.collectionView reloadData];
+        return;
     };
     
-    void (^completionBlock)(void)= ^{
-        [self.photoParser getMatchedPhotosWithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+    void (^getMatchedPhotoBlock)(void)= ^{
+        return [self.photoParser getMatchedPhotosWithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+    };
 
-        //[self.photoParser getMatchedPhotos:&result WithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+    void (^setWeatherBlock)(Weather *)= ^(Weather *currentWeather){
+        // update current weather and view
+        self.currentWeather = currentWeather;
+        [self.weatherView setUpWithWeatherInfoWithCurrentWeather:self.currentWeather];
+
+        // load saved photos or process new ones for display
+        NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"WeatherPhoto" inManagedObjectContext:self.context];
+        NSFetchRequest *request = [[NSFetchRequest alloc] init];
+        [request setEntity:entityDescription];
         
+        NSError *error;
+        NSArray *array = [self.context executeFetchRequest:request error:&error];
+        if (array == nil)
+        {
+            NSLog(@"%@", [error localizedDescription]);
+        } else if ([array count] == 0) {
+            // no photos has been parsed, start fresh!
+            [self.photoParser updatePhotosWithCompletionBlock:getMatchedPhotoBlock];
+        } else {
+            [self.photoParser setValidPhotos:[NSMutableArray arrayWithArray:array]];
+            [self.photoParser getMatchedPhotosWithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+        }
+
     };
-
-
-    [self.photoParser updatePhotosWithCompletionBlock:completionBlock];
     
+    if (self.currentLocation != nil) {
+        [self.weatherEngine currentWeatherForLocation:self.currentLocation City:city withCompletionBlock:setWeatherBlock];
+    }
+    
+    
+
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
@@ -121,21 +145,26 @@
 {
     [super viewDidLoad];
     
-    self.collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 123, 320, 470) collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
+    self.photoParser = [[PhotoParser alloc]init];
+    self.photoParser.context = self.context;
+    
+    CGRect bounds = [[self view] bounds];
+    self.weatherView = [[WeatherView alloc] initWithFrame:CGRectMake(0, 0, bounds.size.width, 170)];
+    self.weatherView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:0.0];
+    
+    [self.view addSubview:self.weatherView];
+    
+    self.collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 123, bounds.size.width, bounds.size.height - [self.weatherView frame].size.height) collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
     [self.collectionView setDataSource:self];
     [self.collectionView setDelegate:self];
     self.collectionView.backgroundColor = [UIColor colorWithRed:197.0/255.0 green:174.0/255.0 blue:133.0/255.0 alpha:1.0];
 
     [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"Cell"];
     
-    [self.view addSubview:self.collectionView];
+    [self.view insertSubview:self.collectionView belowSubview:self.weatherView];
     
     
-    self.weatherView = [[WeatherView alloc] initWithFrame:CGRectMake(0, 0, 320, 170)];
-    [self.weatherView setUpWithWeatherInfoWithCurrentWeather:self.currentWeather];
-    self.weatherView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:0.0];
     
-    [self.view addSubview:self.weatherView];
     
     self.takePhotoButton = [[UIButton alloc]initWithFrame:CGRectMake(145, 128, 31, 31)];
     [self.takePhotoButton setBackgroundImage:[UIImage imageNamed:@"add.png"] forState:UIControlStateNormal];

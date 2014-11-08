@@ -1,5 +1,5 @@
 //
-//  MainCollectionViewController.h
+//  LCMainViewController.h
 //  LookCast
 //
 //  Created by Siyao Clara Xie on 11/16/13.
@@ -11,7 +11,7 @@
 #import "DetailViewController.h"
 #import "PhotoParser.h"
 
-@interface MainCollectionViewController : UIViewController
+@interface LCMainViewController : UIViewController
 
 @property NSArray *matchedPhotos;
 @property NSMutableArray *imageURLs;
@@ -19,6 +19,7 @@
 @property ALAssetsLibrary *library;
 @property CLLocation *currentLocation;
 @property Weather *currentWeather;
+@property NSString *currentCity;
 
 @property WeatherView *weatherView;
 @property UIImagePickerController *camera;
@@ -31,6 +32,6 @@
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 
--(void)setupWithCurrentLocation:(CLLocation *)currentLocation;
+-(void)setupWithCurrentLocation:(CLLocation *)currentLocation City:(NSString *)city;
 @end
 
