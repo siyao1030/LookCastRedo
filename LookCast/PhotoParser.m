@@ -10,10 +10,26 @@
 
 @implementation PhotoParser
 
-- (id)init {
+- (id)initWithContext:(NSManagedObjectContext *)context {
     self.library = [[ALAssetsLibrary alloc] init];
     self.validPhotos = [[NSMutableArray alloc] init];
+    self.weatherEngine = [[WeatherEngine alloc] init];
     
+    self.context = context;
+    // load saved photos or process new ones for display
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"WeatherPhoto" inManagedObjectContext:self.context];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entityDescription];
+    
+    NSError *error;
+    NSArray *array = [self.context executeFetchRequest:request error:&error];
+    if (array == nil)
+    {
+        NSLog(@"%@", [error localizedDescription]);
+    } else {
+        [self setValidPhotos:[NSMutableArray arrayWithArray:array]];
+    }
+
     return self;
 }
 
@@ -71,6 +87,7 @@
                 CLLocation *photoLocation = [result valueForProperty:ALAssetPropertyLocation];
                 NSDate *photoDate = [result valueForProperty:ALAssetPropertyDate];
                 
+                
                 NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"WeatherPhoto" inManagedObjectContext:self.context];
                 WeatherPhoto *temp = [[WeatherPhoto alloc] initWithEntity:entityDescription insertIntoManagedObjectContext:self.context];
 
@@ -78,26 +95,29 @@
                 [temp setLocation:photoLocation];
                 [temp setDate:photoDate];
 
-                [WeatherEngine addWeatherDataToPhoto:temp];
+                [self.weatherEngine addWeatherDataToPhoto:temp];
                 
                 if (![self.validPhotos containsObject:temp]) {
                     [self.validPhotos addObject:temp];
-                    if (self.validPhotos.count >=10) {
+                    if (self.validPhotos.count >=20) {
                         // stop because we have enough for testing right now
                         *stop = YES;
-                        block();
+                        //block();
                     }
                 } else {
                     // stop because we have gone through all the new photos
                     *stop = YES;
-                    block();
+                    //block();
                 }
             }
         } else {
             // stop because there are no more photos
             *stop = YES;
-            block();
+             block();
         }
+            
+       
+
         
     }];};
     

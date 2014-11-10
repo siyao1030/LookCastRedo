@@ -46,6 +46,7 @@
     [operation start];
 }
 
+
 -(void)getDailyForcastForLatitude:(double)lat
                          longitude:(double)lon
                            success:(void (^)(NSMutableArray *responseArray))success
@@ -78,6 +79,29 @@
         NSMutableDictionary *current = [NSMutableDictionary dictionaryWithDictionary:[JSON objectForKey:@"currently"]];
         NSMutableDictionary *today = [NSMutableDictionary dictionaryWithDictionary:[[[JSON objectForKey:@"daily"] objectForKey:@"data"] objectAtIndex:0]];
         success(current, today);
+        
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
+        
+        failure(error);
+        
+    }];
+    [operation start];
+}
+
+
+
+-(void)getDailyForcastForLatitude:(double)lat
+                        longitude:(double)lon
+                             time:(NSTimeInterval)time
+                          success:(void (^)(NSMutableDictionary *currentDict))success
+                          failure:(void (^)(NSError *error))failure {
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.forecast.io/forecast/%@/%.6f,%.6f,%.0f", self.apiKey, lat, lon, time]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+        
+        NSMutableDictionary *today = [NSMutableDictionary dictionaryWithDictionary:[[[JSON objectForKey:@"daily"] objectForKey:@"data"] objectAtIndex:0]];
+        success(today);
         
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
         
@@ -125,25 +149,7 @@
     [operation start];
 }
 
--(void)getDailyForcastForLatitude:(double)lat
-                         longitude:(double)lon
-                              time:(NSTimeInterval)time
-                           success:(void (^)(NSMutableArray *responseArray))success
-                           failure:(void (^)(NSError *error))failure {
-    
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.forecast.io/forecast/%@/%.6f,%.6f,%.0f", self.apiKey, lat, lon, time]];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        
-        success([NSMutableArray arrayWithArray:[[JSON objectForKey:@"daily"] objectForKey:@"data"]]);
-        
-    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
-        
-        failure(error);
-        
-    }];
-    [operation start];
-}
+
 
 -(void)getHourlyForcastForLatitude:(double)lat
                          longitude:(double)lon

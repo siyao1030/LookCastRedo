@@ -52,10 +52,8 @@
         [self.locationManager startUpdatingLocation];
     }
 
-    
-    self.mainViewController =[[LCMainViewController alloc]init];
+    self.mainViewController =[[LCMainViewController alloc] initWithContext:[self managedObjectContext]];
     [self.mainViewController.navigationItem setTitle:@"Back"];
-    self.mainViewController.context = [self managedObjectContext];
     
     
     // set nav bar root view controller

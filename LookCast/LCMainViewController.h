@@ -32,6 +32,7 @@
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 
+-(id)initWithContext:(NSManagedObjectContext *)context;
 -(void)setupWithCurrentLocation:(CLLocation *)currentLocation City:(NSString *)city;
 @end
 

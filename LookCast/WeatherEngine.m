@@ -12,7 +12,7 @@
     CLLocationManager *locationManager;
 }
 
-- (id) init
+- (id)init
 {
     locationManager = [[CLLocationManager alloc] init];
     locationManager.delegate = self;
@@ -28,25 +28,28 @@
 }
 
 
-+ (Weather *)weatherForLocation:(CLLocation *)location date:(NSDate *)date
+- (void)weatherForLocation:(CLLocation *)location date:(NSDate *)date withCompletion:(void (^)(Weather *))block
 {
-    Weather * weather = [[Weather alloc] init];
-    float latitude = location.coordinate.latitude;
-    float longitude = location.coordinate.longitude;
-    NSString *urlString = [NSString stringWithFormat:@"http://api.wunderground.com/api/b02d00370341149d/history_20060405/q/%3.4f,%3.4f.json", latitude, longitude];
+    double latitude = location.coordinate.latitude;
+    double longitude = location.coordinate.longitude;
     
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-    NSError *error;
-    NSURLResponse *response = nil;
-    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+    NSDate *referenceDate = [NSDate dateWithTimeIntervalSince1970:0];
+    NSTimeInterval timeInterval = [date timeIntervalSinceDate:referenceDate];
+
+    [self.forecast getDailyForcastForLatitude:latitude longitude:longitude time:timeInterval success:^(NSMutableDictionary *resultDict) {
+        Weather * weather = [[Weather alloc] init];
+        [weather setChanceOfRain:[NSNumber numberWithFloat:[resultDict[@"precipProbability"] floatValue]]];
+        NSString *high = resultDict[@"apparentTemperatureMax"];
+        NSString *low = resultDict[@"apparentTemperatureMin"];
+        [weather setHigh:[NSNumber numberWithInteger:[high integerValue]]];
+        [weather setLow:[NSNumber numberWithInteger:[low integerValue]]];
+        NSLog(@"%@", resultDict);
+        block(weather);
+    } failure:^(NSError *error){
+        NSLog(@"Daily %@", error.description);
+    }];
     
-    NSMutableDictionary *summary = result[@"history"][@"dailysummary"][0];
-    [weather setLow:[NSNumber numberWithFloat: [summary[@"mintempi"] floatValue]]];
-    [weather setHigh:[NSNumber numberWithFloat: [summary[@"maxtempi"] floatValue]]];
-    [weather setChanceOfRain:[NSNumber numberWithFloat: [summary[@"rain"] floatValue]]];
     
-    return weather;
 }
 
 
@@ -74,9 +77,6 @@
         NSString *low = todayDict[@"apparentTemperatureMin"];
         [currentWeather setHigh:[NSNumber numberWithInteger:[high integerValue]]];
         [currentWeather setLow:[NSNumber numberWithInteger:[low integerValue]]];
-        NSLog(@"%@", currentDict);
-        NSLog(@"%@", todayDict);
-        
         block(currentWeather);
     } failure:^(NSError *error){
         
@@ -191,10 +191,12 @@
  
  */
 
-+ (void)addWeatherDataToPhoto:(WeatherPhoto *)photo {
-    Weather * weather = [self weatherForLocation:photo.location date:photo.date];
-    NSLog(@"weather:%@, %@ at %f, %f", weather.high, weather.low, ((CLLocation *)photo.location).coordinate.latitude, ((CLLocation *)photo.location).coordinate.latitude);
-    [photo setWeather:weather];
+- (void)addWeatherDataToPhoto:(WeatherPhoto *)photo {
+    [self weatherForLocation:photo.location date:photo.date withCompletion:^(Weather *weather){
+        [photo setWeather:weather];
+         NSLog(@"weather:%@, %@ at %f, %f", weather.high, weather.low, ((CLLocation *)photo.location).coordinate.latitude, ((CLLocation *)photo.location).coordinate.latitude);
+    }];
+    
 }
 
 

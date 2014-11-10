@@ -23,6 +23,6 @@
 -(Weather *)currentWeatherAtCurrentLocation;
 - (void)currentWeatherForLocation:(CLLocation *)location City:(NSString *)city withCompletionBlock:(void (^)(Weather *))block;
 + (NSDictionary *)updateWeatherData;
-+ (void)addWeatherDataToPhoto:(WeatherPhoto *)photo;
+- (void)addWeatherDataToPhoto:(WeatherPhoto *)photo;
 
 @end

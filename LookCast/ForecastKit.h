@@ -92,10 +92,10 @@
  * @discussion for many locations, it can be 60 years in the past to 10 years in the future.
  */
 -(void)getDailyForcastForLatitude:(double)lat
-                           longitude:(double)lon
-                                time:(NSTimeInterval)time
-                             success:(void (^)(NSMutableArray *responseArray))success
-                             failure:(void (^)(NSError *error))failure;
+                        longitude:(double)lon
+                             time:(NSTimeInterval)time
+                          success:(void (^)(NSMutableDictionary *currentDict))success
+                          failure:(void (^)(NSError *error))failure;
 
 
 /**

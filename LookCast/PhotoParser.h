@@ -17,7 +17,9 @@
 @property ALAssetsLibrary *library;
 @property NSMutableArray *validPhotos;
 @property NSManagedObjectContext *context;
+@property WeatherEngine *weatherEngine;
 
+- (id)initWithContext:(NSManagedObjectContext *)context;
 - (void)updatePhotosWithCompletionBlock:(void (^)(void))block;
 - (void)getMatchedPhotosWithCurrentWeather:(Weather *)currentWeather WithCompletionBlock:(void (^)(NSArray *))block;
 

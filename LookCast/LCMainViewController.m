@@ -14,21 +14,74 @@
 
 @implementation LCMainViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (id)initWithContext:(NSManagedObjectContext *)context {
+    self = [super init];
     if (self) {
         // Custom initialization
+
+        self.context = context;
+        
+        self.photoParser = [[PhotoParser alloc] initWithContext:self.context];
+        [self.photoParser updatePhotosWithCompletionBlock:^{
+            [self _getMatchedPhotos];
+        }];
         
         self.imageURLs = [[NSMutableArray alloc] init];
         self.library = [[ALAssetsLibrary alloc] init];
         self.weatherEngine = [[WeatherEngine alloc] init];
-        
     }
     return self;
 }
 
+//set up flow
+//1 get current location
+//2 get current weather and update weather view (1)
+//3 update valid photos ()
+//4 get matched photos (2 and 3)
 
+
+-(void)_getWeatherWithCompletion:(void (^)(Weather *))block
+{
+    if (self.currentLocation != nil) {
+        [self.weatherEngine currentWeatherForLocation:self.currentLocation City:self.currentCity withCompletionBlock:block];
+    } else {
+        NSLog(@"ERROR: location is nil");
+    }
+}
+
+-(void)_getMatchedPhotos {
+    void (^loadDataBlock)(NSArray *)= ^(NSArray *result){
+        self.matchedPhotos = result;
+        [self.collectionView reloadData];
+    };
+    
+    if (self.currentWeather) {
+        [self.photoParser getMatchedPhotosWithCurrentWeather:self.currentWeather WithCompletionBlock:loadDataBlock];
+    } else {
+        [self _getWeatherWithCompletion:^(Weather * currentWeather){
+            self.currentWeather = currentWeather;
+            [self.weatherView setUpWithWeatherInfoWithCurrentWeather:self.currentWeather];
+            [self _getMatchedPhotos];
+            
+        }];
+    }
+    
+}
+
+-(void)setupWithCurrentLocation:(CLLocation *)currentLocation City:(NSString *)city {
+    self.currentLocation = currentLocation;
+    self.currentCity = city;
+    
+    [self _getWeatherWithCompletion:^(Weather * currentWeather){
+        self.currentWeather = currentWeather;
+        [self.weatherView setUpWithWeatherInfoWithCurrentWeather:self.currentWeather];
+        [self _getMatchedPhotos];
+
+    }];
+    
+}
+
+/*
 -(void)setupWithCurrentLocation:(CLLocation *)currentLocation City:(NSString *)city {
     self.currentLocation = currentLocation;
     self.currentCity = city;
@@ -71,10 +124,8 @@
     if (self.currentLocation != nil) {
         [self.weatherEngine currentWeatherForLocation:self.currentLocation City:city withCompletionBlock:setWeatherBlock];
     }
-    
-    
 
-}
+}*/
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return self.matchedPhotos.count;
@@ -144,9 +195,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    self.photoParser = [[PhotoParser alloc]init];
-    self.photoParser.context = self.context;
+
     
     CGRect bounds = [[self view] bounds];
     self.weatherView = [[WeatherView alloc] initWithFrame:CGRectMake(0, 0, bounds.size.width, 170)];
